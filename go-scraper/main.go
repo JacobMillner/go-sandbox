@@ -6,7 +6,17 @@ import (
 	"github.com/gocolly/colly"
 )
 
+type grammar struct {
+	eng        string
+	jp         string
+	definition string
+	link       string
+}
+
 func main() {
+	visitedLinks := make(map[string]string)
+	var linksToVisit []string
+
 	c := colly.NewCollector(colly.AllowedDomains("jlptsensei.com"))
 	c.OnRequest(func(r *colly.Request) {
 		fmt.Println("Visiting", r.URL)
@@ -18,12 +28,14 @@ func main() {
 		fmt.Println(e.Text)
 	})
 	c.OnHTML(".page-numbers", func(e *colly.HTMLElement) {
-		link := e.ChildAttr("href", "href")
-		link2 := e.ChildAttr("a[href]", "a[href]")
 		fmt.Println(e)
 		fmt.Println(e.Text)
-		fmt.Println(link)
-		fmt.Println(link2)
+		fmt.Println(e.Attr("href"))
+		if e.Attr("href") != "" {
+			linksToVisit = append(linksToVisit, e.Attr("href"))
+		}
 	})
 	c.Visit("https://jlptsensei.com/jlpt-n5-grammar-list/")
+	visitedLinks["https://jlptsensei.com/jlpt-n5-grammar-list/"] = "start"
+
 }
