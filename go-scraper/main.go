@@ -16,6 +16,7 @@ type grammar struct {
 func main() {
 	visitedLinks := make(map[string]string)
 	var linksToVisit []string
+	var grammarList []grammar
 
 	c := colly.NewCollector(colly.AllowedDomains("jlptsensei.com"))
 	c.OnRequest(func(r *colly.Request) {
@@ -25,11 +26,15 @@ func main() {
 		fmt.Println(r.StatusCode)
 	})
 	c.OnHTML(".jl-row", func(e *colly.HTMLElement) {
-		fmt.Println(e.Text)
+		newGrammar := grammar{
+			eng:        e.ChildText(".jl-td-gr"),
+			jp:         e.ChildText(".jl-td-gj"),
+			definition: e.ChildText(".jl-td-gm"),
+			link:       e.ChildAttr("td > .jl-link", "href"),
+		}
+		grammarList = append(grammarList, newGrammar)
 	})
 	c.OnHTML(".page-numbers", func(e *colly.HTMLElement) {
-		fmt.Println(e)
-		fmt.Println(e.Text)
 		fmt.Println(e.Attr("href"))
 		if e.Attr("href") != "" {
 			linksToVisit = append(linksToVisit, e.Attr("href"))
@@ -37,5 +42,4 @@ func main() {
 	})
 	c.Visit("https://jlptsensei.com/jlpt-n5-grammar-list/")
 	visitedLinks["https://jlptsensei.com/jlpt-n5-grammar-list/"] = "start"
-
 }
