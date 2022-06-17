@@ -1,7 +1,9 @@
 package main
 
 import (
+	"encoding/json"
 	"fmt"
+	"io/ioutil"
 
 	"github.com/gocolly/colly"
 )
@@ -35,11 +37,26 @@ func main() {
 		grammarList = append(grammarList, newGrammar)
 	})
 	c.OnHTML(".page-numbers", func(e *colly.HTMLElement) {
-		fmt.Println(e.Attr("href"))
 		if e.Attr("href") != "" {
-			linksToVisit = append(linksToVisit, e.Attr("href"))
+			if _, ok := visitedLinks[e.Attr("href")]; !ok {
+				linksToVisit = append(linksToVisit, e.Attr("href"))
+				fmt.Println("adding to list: ", e.Attr("href"))
+			}
 		}
 	})
-	c.Visit("https://jlptsensei.com/jlpt-n5-grammar-list/")
-	visitedLinks["https://jlptsensei.com/jlpt-n5-grammar-list/"] = "start"
+	c.Visit("https://jlptsensei.com/jlpt-n5-grammar-list/page/1/")
+	visitedLinks["https://jlptsensei.com/jlpt-n5-grammar-list/page/1/"] = "start"
+
+	for len(linksToVisit) > 0 {
+		link := linksToVisit[0]
+		linksToVisit = append(linksToVisit[:0], linksToVisit[1:]...)
+		visitedLinks[link] = "visited"
+		c.Visit(link)
+	}
+
+	// time to output the grammar!
+	fmt.Println(json.Marshal(grammarList))
+	file, _ := json.Marshal(grammarList)
+
+	_ = ioutil.WriteFile("test.json", file, 0644)
 }
