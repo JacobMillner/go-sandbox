@@ -9,10 +9,10 @@ import (
 )
 
 type grammar struct {
-	eng        string
-	jp         string
-	definition string
-	link       string
+	Eng        string `json:"eng"`
+	Jp         string `json:"jp"`
+	Definition string `json:"def"`
+	Link       string `json:"link"`
 }
 
 func main() {
@@ -29,10 +29,10 @@ func main() {
 	})
 	c.OnHTML(".jl-row", func(e *colly.HTMLElement) {
 		newGrammar := grammar{
-			eng:        e.ChildText(".jl-td-gr"),
-			jp:         e.ChildText(".jl-td-gj"),
-			definition: e.ChildText(".jl-td-gm"),
-			link:       e.ChildAttr("td > .jl-link", "href"),
+			Eng:        e.ChildText(".jl-td-gr"),
+			Jp:         e.ChildText(".jl-td-gj"),
+			Definition: e.ChildText(".jl-td-gm"),
+			Link:       e.ChildAttr("td > .jl-link", "href"),
 		}
 		grammarList = append(grammarList, newGrammar)
 	})
@@ -55,8 +55,8 @@ func main() {
 	}
 
 	// time to output the grammar!
-	fmt.Println(json.Marshal(grammarList))
 	file, _ := json.Marshal(grammarList)
+	fmt.Println(string(file))
 
 	_ = ioutil.WriteFile("test.json", file, 0644)
 }
